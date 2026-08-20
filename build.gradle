@@ -1,0 +1,89 @@
+
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '3.4.5'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.udea'
+version = '0.0.1-SNAPSHOT'
+description = 'Backend en capas que consume la World Bank Indicators API'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+}
+
+tasks.register('testUnit', Test) {
+    description = 'Runs unit tests (tagged @Tag("unit")) and generates an HTML report'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'unit'
+    }
+    reports {
+        html.outputLocation = layout.buildDirectory.dir('reports/tests/unit')
+        junitXml.outputLocation = layout.buildDirectory.dir('test-results/unit')
+    }
+}
+
+tasks.register('testPerformance', Test) {
+    description = 'Runs performance tests (tagged @Tag("performance")) and generates an HTML report'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'performance'
+    }
+    reports {
+        html.outputLocation = layout.buildDirectory.dir('reports/tests/performance')
+        junitXml.outputLocation = layout.buildDirectory.dir('test-results/performance')
+    }
+    mustRunAfter tasks.testUnit
+}
+
+tasks.jacocoTestReport {
+    dependsOn tasks.test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn tasks.jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                minimum = 1.0
+            }
+        }
+        rule {
+            limit {
+                counter = 'BRANCH'
+                minimum = 1.0
+            }
+        }
+    }
+}

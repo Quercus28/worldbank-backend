@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.client.mapper.unit.ObservationMapperTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:24:13" hostname="QUERCUSSILVER" time="0.006">
+  <properties/>
+  <testcase name="test_toDomain_leavesCountryAndIndicatorFieldsNull_whenAbsentFromTheResponse()" classname="com.udea.worldbank.client.mapper.unit.ObservationMapperTest" time="0.002"/>
+  <testcase name="test_toDomain_returnsMinusOne_whenDateIsNotAFourDigitYear()" classname="com.udea.worldbank.client.mapper.unit.ObservationMapperTest" time="0.001"/>
+  <testcase name="test_toDomain_mapsAllFields_whenCountryAndIndicatorArePresent()" classname="com.udea.worldbank.client.mapper.unit.ObservationMapperTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

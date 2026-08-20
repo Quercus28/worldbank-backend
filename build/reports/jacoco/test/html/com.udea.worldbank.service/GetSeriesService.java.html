@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GetSeriesService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.service</a> &gt; <span class="el_source">GetSeriesService.java</span></div><h1>GetSeriesService.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.service;
+
+import com.udea.worldbank.client.ObservationsWorldBankClient;
+import com.udea.worldbank.dto.SeriesPointResponse;
+import com.udea.worldbank.dto.SeriesResponse;
+import com.udea.worldbank.exception.DataNotFoundException;
+import com.udea.worldbank.exception.WorldBankApiException;
+import com.udea.worldbank.model.Observation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * CASO DE USO: serie temporal limpia de un indicador para un pais.
+ *   - descarta años sin dato (value == null)
+ *   - reordena cronologicamente (la API los devuelve del mas nuevo al mas viejo)
+ *   - mapea a un DTO propio
+ */
+@Service
+public final class GetSeriesService implements GetSeriesUseCase {
+
+<span class="fc" id="L25">    private static final Logger log = LoggerFactory.getLogger(GetSeriesService.class);</span>
+
+    private final ObservationsWorldBankClient observationsClient;
+
+<span class="fc" id="L29">    public GetSeriesService(ObservationsWorldBankClient observationsClient) {</span>
+<span class="fc" id="L30">        this.observationsClient = observationsClient;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public SeriesResponse getSeries(String countryIso3, String indicator, Integer from, Integer to) {
+<span class="fc" id="L35">        List&lt;Observation&gt; observations = getObservations(countryIso3, indicator, from, to);</span>
+
+<span class="fc" id="L37">        List&lt;SeriesPointResponse&gt; points = observations.stream()</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">                .filter(o -&gt; o.value() != null)</span>
+<span class="fc" id="L39">                .sorted(Comparator.comparingInt(Observation::year))</span>
+<span class="fc" id="L40">                .map(o -&gt; new SeriesPointResponse(o.year(), o.value()))</span>
+<span class="fc" id="L41">                .toList();</span>
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (points.isEmpty()) {</span>
+<span class="fc" id="L44">            throw new DataNotFoundException(</span>
+<span class="fc" id="L45">                    &quot;No data found for '%s' in '%s' within the requested range&quot;.formatted(indicator, countryIso3));</span>
+        }
+
+<span class="fc" id="L48">        Observation reference = observations.get(0);</span>
+<span class="fc" id="L49">        return new SeriesResponse(</span>
+<span class="fc" id="L50">                countryIso3.toUpperCase(),</span>
+<span class="fc" id="L51">                reference.countryName(),</span>
+                indicator,
+<span class="fc" id="L53">                reference.indicatorName(),</span>
+                points);
+    }
+
+    /**
+     * Aisla la llamada externa para poder registrar el contexto de negocio
+     * (pais, indicador, rango) que la capa de acceso a datos desconoce, antes
+     * de dejar que {@link com.udea.worldbank.exception.GlobalExceptionHandler}
+     * la traduzca a una respuesta HTTP.
+     */
+    private List&lt;Observation&gt; getObservations(String countryIso3, String indicator, Integer from, Integer to) {
+        try {
+<span class="fc" id="L65">            return observationsClient.getObservations(countryIso3, indicator, from, to);</span>
+<span class="fc" id="L66">        } catch (WorldBankApiException e) {</span>
+<span class="fc" id="L67">            log.error(&quot;Could not fetch the series for '{}' in '{}' (range {}-{}): {}&quot;,</span>
+<span class="fc" id="L68">                    indicator, countryIso3, from, to, e.getMessage());</span>
+<span class="fc" id="L69">            throw e;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

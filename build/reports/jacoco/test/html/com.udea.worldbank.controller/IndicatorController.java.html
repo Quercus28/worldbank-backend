@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IndicatorController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.controller</a> &gt; <span class="el_source">IndicatorController.java</span></div><h1>IndicatorController.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.controller;
+
+import com.udea.worldbank.dto.GdpPerCapitaResponse;
+import com.udea.worldbank.dto.RankingItemResponse;
+import com.udea.worldbank.dto.SeriesResponse;
+import com.udea.worldbank.service.CalculateGdpPerCapitaUseCase;
+import com.udea.worldbank.service.GetSeriesUseCase;
+import com.udea.worldbank.service.RankingUseCase;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * CAPA WEB (presentacion). Solo traduce peticiones HTTP a llamadas de la capa
+ * de servicio y devuelve DTOs propios. No contiene logica de negocio.
+ */
+@RestController
+@RequestMapping(&quot;/api/indicators&quot;)
+@Validated
+public class IndicatorController {
+
+    private final GetSeriesUseCase getSeriesUseCase;
+    private final CalculateGdpPerCapitaUseCase calculateGdpPerCapitaUseCase;
+    private final RankingUseCase rankingUseCase;
+
+    public IndicatorController(GetSeriesUseCase getSeriesUseCase,
+                               CalculateGdpPerCapitaUseCase calculateGdpPerCapitaUseCase,
+<span class="fc" id="L35">                               RankingUseCase rankingUseCase) {</span>
+<span class="fc" id="L36">        this.getSeriesUseCase = getSeriesUseCase;</span>
+<span class="fc" id="L37">        this.calculateGdpPerCapitaUseCase = calculateGdpPerCapitaUseCase;</span>
+<span class="fc" id="L38">        this.rankingUseCase = rankingUseCase;</span>
+<span class="fc" id="L39">    }</span>
+
+    /**
+     * Serie temporal de un indicador para un pais.
+     * Ejemplo: /api/indicators/series?country=BRA&amp;indicator=SP.POP.TOTL&amp;from=2010&amp;to=2020
+     */
+    @GetMapping(&quot;/series&quot;)
+    public SeriesResponse series(
+            @RequestParam @NotBlank String country,
+            @RequestParam @NotBlank String indicator,
+            @RequestParam(required = false) Integer from,
+            @RequestParam(required = false) Integer to) {
+<span class="fc" id="L51">        return getSeriesUseCase.getSeries(country, indicator, from, to);</span>
+    }
+
+    /**
+     * PIB per capita (indicador derivado).
+     * Ejemplo: /api/indicators/gdp-per-capita?country=BRA&amp;year=2022
+     */
+    @GetMapping(&quot;/gdp-per-capita&quot;)
+    public GdpPerCapitaResponse gdpPerCapita(
+            @RequestParam @NotBlank String country,
+            @RequestParam @Min(1960) int year) {
+<span class="fc" id="L62">        return calculateGdpPerCapitaUseCase.calculateGdpPerCapita(country, year);</span>
+    }
+
+    /**
+     * Ranking de paises por indicador.
+     * Ejemplo: /api/indicators/ranking?indicator=NY.GDP.MKTP.CD&amp;year=2022&amp;limit=10
+     */
+    @GetMapping(&quot;/ranking&quot;)
+    public List&lt;RankingItemResponse&gt; ranking(
+            @RequestParam @NotBlank String indicator,
+            @RequestParam @Min(1960) int year,
+            @RequestParam(defaultValue = &quot;10&quot;) @Min(1) @Max(100) int limit) {
+<span class="fc" id="L74">        return rankingUseCase.ranking(indicator, year, limit);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

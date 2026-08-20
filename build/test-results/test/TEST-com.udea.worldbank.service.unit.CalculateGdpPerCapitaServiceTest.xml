@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:51:52" hostname="QUERCUSSILVER" time="0.11">
+  <properties/>
+  <testcase name="test_calculateGdpPerCapita_normalizesIso3ToUppercase_whenTheParameterIsLowercase()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.021"/>
+  <testcase name="test_calculateGdpPerCapita_returnsARoundedValueAndACurrencyFormattedString_whenGdpAndPopulationExistForTheYear()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.005"/>
+  <testcase name="test_calculateGdpPerCapita_throwsDataNotFoundException_whenThereIsNoPopulationData()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.006"/>
+  <testcase name="test_calculateGdpPerCapita_throwsDataNotFoundException_whenThereIsNoGdpData()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.038"/>
+  <testcase name="test_calculateGdpPerCapita_throwsDataNotFoundException_whenPopulationIsZero()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.005"/>
+  <testcase name="test_calculateGdpPerCapita_propagatesWorldBankApiException_whenCommunicationWithTheApiFails()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.024"/>
+  <testcase name="test_calculateGdpPerCapita_discardsObservationsWithoutValue_andUsesTheFirstWithData()" classname="com.udea.worldbank.service.unit.CalculateGdpPerCapitaServiceTest" time="0.004"/>
+  <system-out><![CDATA[21:51:52.270 [Test worker] ERROR com.udea.worldbank.service.CalculateGdpPerCapitaService -- Could not fetch 'NY.GDP.MKTP.CD' for 'BRA' in 2022: service unavailable
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

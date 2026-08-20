@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.controller.performance.IndicatorControllerPerformanceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:23:42" hostname="QUERCUSSILVER" time="0.391">
+  <properties/>
+  <testcase name="test_endpoints_sustainConcurrentThroughput_whenManyRequestsArriveAtOnce()" classname="com.udea.worldbank.controller.performance.IndicatorControllerPerformanceTest" time="0.391"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

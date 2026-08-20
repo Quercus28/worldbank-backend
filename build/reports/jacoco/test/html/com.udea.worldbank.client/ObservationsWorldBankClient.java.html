@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObservationsWorldBankClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.client</a> &gt; <span class="el_source">ObservationsWorldBankClient.java</span></div><h1>ObservationsWorldBankClient.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.client;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.udea.worldbank.client.dto.WorldBankObservation;
+import com.udea.worldbank.client.mapper.ObservationMapper;
+import com.udea.worldbank.model.Observation;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * CASO DE USO: obtener las observaciones de un indicador para uno o varios
+ * paises. Traduce el JSON crudo a objetos de dominio via {@link ObservationMapper}.
+ */
+@Component
+public class ObservationsWorldBankClient {
+
+    private final WorldBankApiExecutor executor;
+    private final ObjectMapper objectMapper;
+    private final ObservationMapper mapper;
+
+    public ObservationsWorldBankClient(WorldBankApiExecutor executor,
+                                       ObjectMapper objectMapper,
+<span class="fc" id="L26">                                       ObservationMapper mapper) {</span>
+<span class="fc" id="L27">        this.executor = executor;</span>
+<span class="fc" id="L28">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L29">        this.mapper = mapper;</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Obtiene las observaciones de un indicador para uno o varios paises.
+     *
+     * @param countries codigo(s) de pais separados por ';' o el literal &quot;all&quot;
+     * @param indicator codigo del indicador (p.ej. &quot;SP.POP.TOTL&quot;)
+     * @param from      año inicial (inclusive) o null para no acotar
+     * @param to        año final (inclusive) o null para no acotar
+     */
+    public List&lt;Observation&gt; getObservations(String countries, String indicator,
+                                             Integer from, Integer to) {
+<span class="fc" id="L42">        JsonNode root = executor.execute(uriBuilder -&gt; {</span>
+<span class="fc" id="L43">            uriBuilder.path(&quot;/country/{countries}/indicator/{indicator}&quot;)</span>
+<span class="fc" id="L44">                    .queryParam(&quot;format&quot;, &quot;json&quot;)</span>
+<span class="fc" id="L45">                    .queryParam(&quot;per_page&quot;, WorldBankApiExecutor.MAX_PAGE_SIZE);</span>
+<span class="fc bfc" id="L46" title="All 4 branches covered.">            if (from != null &amp;&amp; to != null) {</span>
+<span class="fc" id="L47">                uriBuilder.queryParam(&quot;date&quot;, from + &quot;:&quot; + to);</span>
+            }
+<span class="fc" id="L49">            return uriBuilder.build(countries, indicator);</span>
+        });
+
+<span class="fc" id="L52">        JsonNode data = executor.extractData(root);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (data == null) {</span>
+<span class="fc" id="L54">            return List.of();</span>
+        }
+<span class="fc" id="L56">        List&lt;WorldBankObservation&gt; raw =</span>
+<span class="fc" id="L57">                objectMapper.convertValue(data, new TypeReference&lt;List&lt;WorldBankObservation&gt;&gt;() {});</span>
+<span class="fc" id="L58">        return raw.stream().map(mapper::toDomain).toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

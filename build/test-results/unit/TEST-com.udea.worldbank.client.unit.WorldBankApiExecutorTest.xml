@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:24:14" hostname="QUERCUSSILVER" time="0.397">
+  <properties/>
+  <testcase name="test_extractData_returnsNull_whenThereIsNoDataPosition()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.33"/>
+  <testcase name="test_extractData_throwsWorldBankApiException_whenRootIsNotAnArray()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.003"/>
+  <testcase name="test_extractData_throwsWorldBankApiException_whenMetadataCarriesAnErrorMessage()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.03"/>
+  <testcase name="test_extractData_returnsPositionOne_whenTheResponseIsValid()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.003"/>
+  <testcase name="test_execute_returnsTheResponseBody_whenTheCallSucceeds()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.008"/>
+  <testcase name="test_extractData_throwsWorldBankApiException_whenRootIsAnEmptyArray()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.004"/>
+  <testcase name="test_execute_throwsWorldBankApiException_whenTheHttpCallFails()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.008"/>
+  <testcase name="test_extractData_throwsWorldBankApiException_whenRootIsNull()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.002"/>
+  <testcase name="test_extractData_returnsNull_whenTheDataPositionIsNull()" classname="com.udea.worldbank.client.unit.WorldBankApiExecutorTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

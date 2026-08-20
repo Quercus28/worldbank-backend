@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.service.unit.GetSeriesServiceTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:24:15" hostname="QUERCUSSILVER" time="0.015">
+  <properties/>
+  <testcase name="test_getSeries_returnsPointsFilteredAndSortedChronologically_whenThereAreValidObservations()" classname="com.udea.worldbank.service.unit.GetSeriesServiceTest" time="0.004"/>
+  <testcase name="test_getSeries_propagatesWorldBankApiException_whenCommunicationWithTheApiFails()" classname="com.udea.worldbank.service.unit.GetSeriesServiceTest" time="0.004"/>
+  <testcase name="test_getSeries_throwsDataNotFoundException_whenAllObservationsHaveANullValue()" classname="com.udea.worldbank.service.unit.GetSeriesServiceTest" time="0.002"/>
+  <testcase name="test_getSeries_throwsDataNotFoundException_whenTheApiReturnsNoObservations()" classname="com.udea.worldbank.service.unit.GetSeriesServiceTest" time="0.002"/>
+  <testcase name="test_getSeries_normalizesIso3ToUppercase_whenTheParameterIsLowercase()" classname="com.udea.worldbank.service.unit.GetSeriesServiceTest" time="0.002"/>
+  <system-out><![CDATA[21:24:15.573 [Test worker] ERROR com.udea.worldbank.service.GetSeriesService -- Could not fetch the series for 'SP.POP.TOTL' in 'BRA' (range null-null): timeout
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

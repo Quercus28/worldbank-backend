@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObservationMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.client.mapper</a> &gt; <span class="el_source">ObservationMapper.java</span></div><h1>ObservationMapper.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.client.mapper;
+
+import com.udea.worldbank.client.dto.WorldBankObservation;
+import com.udea.worldbank.model.Observation;
+import org.springframework.stereotype.Component;
+
+/**
+ * Traduce un DTO crudo de la API externa ({@link WorldBankObservation}) al
+ * modelo de dominio ({@link Observation}). Mantener esta traduccion aqui es lo
+ * que evita que la estructura del Banco Mundial se filtre hacia el resto de la
+ * aplicacion.
+ */
+@Component
+<span class="fc" id="L14">public class ObservationMapper {</span>
+
+    public Observation toDomain(WorldBankObservation raw) {
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        String countryId = raw.country() != null ? raw.country().id() : null;</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        String countryName = raw.country() != null ? raw.country().value() : null;</span>
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        String indicatorId = raw.indicator() != null ? raw.indicator().id() : null;</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        String indicatorName = raw.indicator() != null ? raw.indicator().value() : null;</span>
+
+<span class="fc" id="L22">        return new Observation(</span>
+                countryId,
+                countryName,
+<span class="fc" id="L25">                raw.countryIso3Code(),</span>
+                indicatorId,
+                indicatorName,
+<span class="fc" id="L28">                parseYear(raw.date()),</span>
+<span class="fc" id="L29">                raw.value()</span>
+        );
+    }
+
+    /**
+     * Los indicadores usados aqui son anuales, asi que &quot;date&quot; es un año de 4
+     * digitos. Si llegara otro formato (mensual/trimestral) se devuelve -1 para
+     * que la capa de servicio pueda descartar la observacion.
+     */
+    private int parseYear(String date) {
+        try {
+<span class="fc" id="L40">            return Integer.parseInt(date);</span>
+<span class="fc" id="L41">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L42">            return -1;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

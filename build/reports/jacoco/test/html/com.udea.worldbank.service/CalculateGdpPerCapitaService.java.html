@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalculateGdpPerCapitaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.service</a> &gt; <span class="el_source">CalculateGdpPerCapitaService.java</span></div><h1>CalculateGdpPerCapitaService.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.service;
+
+import com.udea.worldbank.client.ObservationsWorldBankClient;
+import com.udea.worldbank.dto.GdpPerCapitaResponse;
+import com.udea.worldbank.exception.DataNotFoundException;
+import com.udea.worldbank.exception.WorldBankApiException;
+import com.udea.worldbank.model.Observation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+/**
+ * CASO DE USO: PIB per capita (indicador derivado que el Banco Mundial no expone directamente).
+ *   - pide PIB (NY.GDP.MKTP.CD) y poblacion (SP.POP.TOTL) del mismo pais y año
+ *   - calcula PIB / poblacion, redondeado a 2 decimales
+ *   - formatea ambos montos como moneda (USD)
+ */
+@Service
+public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapitaUseCase {
+
+<span class="fc" id="L26">    private static final Logger log = LoggerFactory.getLogger(CalculateGdpPerCapitaService.class);</span>
+
+    private static final String GDP_INDICATOR = &quot;NY.GDP.MKTP.CD&quot;;
+    private static final String POPULATION_INDICATOR = &quot;SP.POP.TOTL&quot;;
+    private static final int USD_SCALE = 2;
+
+    private final ObservationsWorldBankClient observationsClient;
+
+<span class="fc" id="L34">    public CalculateGdpPerCapitaService(ObservationsWorldBankClient observationsClient) {</span>
+<span class="fc" id="L35">        this.observationsClient = observationsClient;</span>
+<span class="fc" id="L36">    }</span>
+
+    @Override
+    public GdpPerCapitaResponse calculateGdpPerCapita(String countryIso3, int year) {
+<span class="fc" id="L40">        Double gdp = pointValue(countryIso3, GDP_INDICATOR, year);</span>
+<span class="fc" id="L41">        Double population = pointValue(countryIso3, POPULATION_INDICATOR, year);</span>
+
+<span class="fc bfc" id="L43" title="All 6 branches covered.">        if (gdp == null || population == null || population == 0) {</span>
+<span class="fc" id="L44">            throw new DataNotFoundException(</span>
+<span class="fc" id="L45">                    &quot;Missing GDP or population data for '%s' in %d&quot;.formatted(countryIso3, year));</span>
+        }
+
+<span class="fc" id="L48">        long populationAmount = population.longValue();</span>
+<span class="fc" id="L49">        BigDecimal gdpAmount = BigDecimal.valueOf(gdp).setScale(USD_SCALE, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L50">        BigDecimal perCapitaAmount = BigDecimal.valueOf(gdp)</span>
+<span class="fc" id="L51">                .divide(BigDecimal.valueOf(populationAmount), USD_SCALE, RoundingMode.HALF_UP);</span>
+
+<span class="fc" id="L53">        return new GdpPerCapitaResponse(</span>
+<span class="fc" id="L54">                countryIso3.toUpperCase(),</span>
+                year,
+                gdpAmount,
+<span class="fc" id="L57">                formatUsd(gdpAmount),</span>
+                populationAmount,
+                perCapitaAmount,
+<span class="fc" id="L60">                formatUsd(perCapitaAmount));</span>
+    }
+
+    /**
+     * Aisla la llamada externa para poder registrar el contexto de negocio
+     * (pais, indicador, año) que la capa de acceso a datos desconoce, antes
+     * de dejar que {@link com.udea.worldbank.exception.GlobalExceptionHandler}
+     * la traduzca a una respuesta HTTP.
+     *
+     * @return el valor del indicador para ese año, o {@code null} si el Banco Mundial no lo reporta
+     */
+    private Double pointValue(String countryIso3, String indicator, int year) {
+        try {
+<span class="fc" id="L73">            return observationsClient.getObservations(countryIso3, indicator, year, year).stream()</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">                    .filter(o -&gt; o.value() != null)</span>
+<span class="fc" id="L75">                    .map(Observation::value)</span>
+<span class="fc" id="L76">                    .findFirst()</span>
+<span class="fc" id="L77">                    .orElse(null);</span>
+<span class="fc" id="L78">        } catch (WorldBankApiException e) {</span>
+<span class="fc" id="L79">            log.error(&quot;Could not fetch '{}' for '{}' in {}: {}&quot;,</span>
+<span class="fc" id="L80">                    indicator, countryIso3, year, e.getMessage());</span>
+<span class="fc" id="L81">            throw e;</span>
+        }
+    }
+
+    private String formatUsd(BigDecimal amount) {
+<span class="fc" id="L86">        return NumberFormat.getCurrencyInstance(Locale.US).format(amount);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

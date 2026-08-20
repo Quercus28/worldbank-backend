@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CountriesWorldBankClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.client</a> &gt; <span class="el_source">CountriesWorldBankClient.java</span></div><h1>CountriesWorldBankClient.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.client;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.udea.worldbank.client.dto.WorldBankCountry;
+import com.udea.worldbank.exception.WorldBankApiException;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * CASO DE USO: obtener los codigos ISO3 de los paises reales (sin agregados
+ * regionales ni grupos de ingreso). La lista es estable, asi que se cachea
+ * tras la primera llamada.
+ */
+@Component
+public class CountriesWorldBankClient {
+
+    private final WorldBankApiExecutor executor;
+    private final ObjectMapper objectMapper;
+
+    private volatile Set&lt;String&gt; cachedRealCountryCodes;
+
+<span class="fc" id="L27">    public CountriesWorldBankClient(WorldBankApiExecutor executor, ObjectMapper objectMapper) {</span>
+<span class="fc" id="L28">        this.executor = executor;</span>
+<span class="fc" id="L29">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L30">    }</span>
+
+    public Set&lt;String&gt; getRealCountryCodes() {
+<span class="fc" id="L33">        Set&lt;String&gt; cache = cachedRealCountryCodes;</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (cache != null) {</span>
+<span class="fc" id="L35">            return cache;</span>
+        }
+<span class="fc" id="L37">        synchronized (this) {</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            if (cachedRealCountryCodes != null) {</span>
+<span class="fc" id="L39">                return cachedRealCountryCodes;</span>
+            }
+<span class="fc" id="L41">            JsonNode root = executor.execute(uriBuilder -&gt; uriBuilder</span>
+<span class="fc" id="L42">                    .path(&quot;/country&quot;)</span>
+<span class="fc" id="L43">                    .queryParam(&quot;format&quot;, &quot;json&quot;)</span>
+<span class="fc" id="L44">                    .queryParam(&quot;per_page&quot;, WorldBankApiExecutor.MAX_PAGE_SIZE)</span>
+<span class="fc" id="L45">                    .build());</span>
+
+<span class="fc" id="L47">            JsonNode data = executor.extractData(root);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (data == null) {</span>
+<span class="fc" id="L49">                throw new WorldBankApiException(&quot;Could not fetch the list of countries&quot;);</span>
+            }
+<span class="fc" id="L51">            List&lt;WorldBankCountry&gt; countries =</span>
+<span class="fc" id="L52">                    objectMapper.convertValue(data, new TypeReference&lt;List&lt;WorldBankCountry&gt;&gt;() {});</span>
+<span class="fc" id="L53">            cachedRealCountryCodes = countries.stream()</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">                    .filter(c -&gt; !c.isAggregate())</span>
+<span class="fc" id="L55">                    .map(WorldBankCountry::id)</span>
+<span class="fc" id="L56">                    .collect(Collectors.toUnmodifiableSet());</span>
+<span class="fc" id="L57">            return cachedRealCountryCodes;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

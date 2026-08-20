@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.config.unit.RestClientConfigTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:24:14" hostname="QUERCUSSILVER" time="0.37">
+  <properties/>
+  <testcase name="test_worldBankRestClient_buildsANonNullClient_withTheConfiguredBaseUrl()" classname="com.udea.worldbank.config.unit.RestClientConfigTest" time="0.37"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
