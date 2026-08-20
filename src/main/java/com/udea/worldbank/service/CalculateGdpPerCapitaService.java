@@ -1,10 +1,14 @@
 package com.udea.worldbank.service;
 
+import com.udea.worldbank.client.ExchangeRateClient;
 import com.udea.worldbank.client.ObservationsWorldBankClient;
+import com.udea.worldbank.client.dto.FrankfurterLatestRates;
 import com.udea.worldbank.dto.GdpPerCapitaResponse;
 import com.udea.worldbank.exception.DataNotFoundException;
+import com.udea.worldbank.exception.ExchangeRateApiException;
 import com.udea.worldbank.exception.WorldBankApiException;
 import com.udea.worldbank.model.Observation;
+import com.udea.worldbank.util.CurrencyFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,7 @@ import java.util.Locale;
  *   - pide PIB (NY.GDP.MKTP.CD) y poblacion (SP.POP.TOTL) del mismo pais y año
  *   - calcula PIB / poblacion, redondeado a 2 decimales
  *   - formatea ambos montos como moneda (USD)
+ *   - opcionalmente, convierte el PIB per capita a otra moneda (Frankfurter API)
  */
 @Service
 public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapitaUseCase {
@@ -27,16 +32,20 @@ public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapita
 
     private static final String GDP_INDICATOR = "NY.GDP.MKTP.CD";
     private static final String POPULATION_INDICATOR = "SP.POP.TOTL";
+    private static final String USD = "USD";
     private static final int USD_SCALE = 2;
 
     private final ObservationsWorldBankClient observationsClient;
+    private final ExchangeRateClient exchangeRateClient;
 
-    public CalculateGdpPerCapitaService(ObservationsWorldBankClient observationsClient) {
+    public CalculateGdpPerCapitaService(ObservationsWorldBankClient observationsClient,
+                                        ExchangeRateClient exchangeRateClient) {
         this.observationsClient = observationsClient;
+        this.exchangeRateClient = exchangeRateClient;
     }
 
     @Override
-    public GdpPerCapitaResponse calculateGdpPerCapita(String countryIso3, int year) {
+    public GdpPerCapitaResponse calculateGdpPerCapita(String countryIso3, int year, String targetCurrency) {
         Double gdp = pointValue(countryIso3, GDP_INDICATOR, year);
         Double population = pointValue(countryIso3, POPULATION_INDICATOR, year);
 
@@ -50,6 +59,8 @@ public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapita
         BigDecimal perCapitaAmount = BigDecimal.valueOf(gdp)
                 .divide(BigDecimal.valueOf(populationAmount), USD_SCALE, RoundingMode.HALF_UP);
 
+        Conversion conversion = convertIfRequested(perCapitaAmount, targetCurrency);
+
         return new GdpPerCapitaResponse(
                 countryIso3.toUpperCase(),
                 year,
@@ -57,7 +68,36 @@ public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapita
                 formatUsd(gdpAmount),
                 populationAmount,
                 perCapitaAmount,
-                formatUsd(perCapitaAmount));
+                formatUsd(perCapitaAmount),
+                conversion.currency(),
+                conversion.amount(),
+                conversion.formatted(),
+                conversion.rate(),
+                conversion.rateDate());
+    }
+
+    /**
+     * Convierte el PIB per capita (siempre en USD) a {@code targetCurrency} si se pidio.
+     * Aisla la llamada externa para registrar el contexto de negocio antes de relanzar.
+     */
+    private Conversion convertIfRequested(BigDecimal perCapitaUsd, String targetCurrency) {
+        if (targetCurrency == null || targetCurrency.isBlank()) {
+            return Conversion.EMPTY;
+        }
+        String currency = targetCurrency.toUpperCase();
+        FrankfurterLatestRates latest = getLatestRate(currency);
+        BigDecimal rate = latest.rates().get(currency);
+        BigDecimal converted = CurrencyFormatter.round(perCapitaUsd.multiply(rate), currency);
+        return new Conversion(currency, converted, CurrencyFormatter.format(converted, currency), rate, latest.date());
+    }
+
+    private FrankfurterLatestRates getLatestRate(String targetCurrency) {
+        try {
+            return exchangeRateClient.getLatestRate(USD, targetCurrency);
+        } catch (ExchangeRateApiException e) {
+            log.error("Could not fetch the exchange rate to '{}': {}", targetCurrency, e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -84,5 +124,9 @@ public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapita
 
     private String formatUsd(BigDecimal amount) {
         return NumberFormat.getCurrencyInstance(Locale.US).format(amount);
+    }
+
+    private record Conversion(String currency, BigDecimal amount, String formatted, BigDecimal rate, String rateDate) {
+        private static final Conversion EMPTY = new Conversion(null, null, null, null, null);
     }
 }

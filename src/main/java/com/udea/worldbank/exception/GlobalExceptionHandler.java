@@ -25,6 +25,12 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
     }
 
+    /** Fallo hablando con la API externa de tasas de cambio -> 502 Bad Gateway. */
+    @ExceptionHandler(ExchangeRateApiException.class)
+    public ProblemDetail handleExchangeRateApiError(ExchangeRateApiException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
+    }
+
     /** Parametros invalidos (violan las restricciones del controlador) -> 400. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail handleValidationError(ConstraintViolationException ex) {

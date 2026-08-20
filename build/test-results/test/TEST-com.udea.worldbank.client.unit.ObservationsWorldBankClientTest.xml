@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:51:50" hostname="QUERCUSSILVER" time="0.087">
+<testsuite name="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:06" hostname="QUERCUSSILVER" time="0.067">
   <properties/>
-  <testcase name="test_getObservations_returnsMappedObservations_whenTheApiReturnsData()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.05"/>
-  <testcase name="test_getObservations_returnsEmptyList_whenTheApiReturnsNoData()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.006"/>
-  <testcase name="test_getObservations_includesTheDateRange_whenFromAndToAreNotNull()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.011"/>
-  <testcase name="test_getObservations_omitsTheDateParameter_whenOnlyOneOfFromOrToIsNull()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.009"/>
-  <testcase name="test_getObservations_omitsTheDateParameter_whenFromAndToAreNull()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.006"/>
+  <testcase name="test_getObservations_returnsMappedObservations_whenTheApiReturnsData()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.043"/>
+  <testcase name="test_getObservations_returnsEmptyList_whenTheApiReturnsNoData()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.004"/>
+  <testcase name="test_getObservations_includesTheDateRange_whenFromAndToAreNotNull()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.009"/>
+  <testcase name="test_getObservations_omitsTheDateParameter_whenOnlyOneOfFromOrToIsNull()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.005"/>
+  <testcase name="test_getObservations_omitsTheDateParameter_whenFromAndToAreNull()" classname="com.udea.worldbank.client.unit.ObservationsWorldBankClientTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

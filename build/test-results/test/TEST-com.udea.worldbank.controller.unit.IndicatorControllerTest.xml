@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.udea.worldbank.controller.unit.IndicatorControllerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:51:51" hostname="QUERCUSSILVER" time="0.022">
+<testsuite name="com.udea.worldbank.controller.unit.IndicatorControllerTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:07" hostname="QUERCUSSILVER" time="0.012">
   <properties/>
-  <testcase name="test_gdpPerCapita_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.005"/>
-  <testcase name="test_series_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.007"/>
-  <testcase name="test_ranking_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.008"/>
+  <testcase name="test_gdpPerCapita_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.003"/>
+  <testcase name="test_exchangeRate_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.003"/>
+  <testcase name="test_series_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.001"/>
+  <testcase name="test_ranking_delegatesToTheUseCaseAndReturnsItsResult()" classname="com.udea.worldbank.controller.unit.IndicatorControllerTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

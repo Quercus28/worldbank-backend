@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.service.performance.ExchangeRateServicePerformanceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:34" hostname="QUERCUSSILVER" time="0.464">
+  <properties/>
+  <testcase name="test_convert_neverCallsTheExternalApi_underConcurrentLoad_whenBothCurrenciesAreTheSame()" classname="com.udea.worldbank.service.performance.ExchangeRateServicePerformanceTest" time="0.136"/>
+  <testcase name="test_convert_sustainsThroughput_underManySequentialCalls()" classname="com.udea.worldbank.service.performance.ExchangeRateServicePerformanceTest" time="0.075"/>
+  <testcase name="test_convert_sustainsHighConcurrentThroughput_whenManyThreadsConvertAtOnce()" classname="com.udea.worldbank.service.performance.ExchangeRateServicePerformanceTest" time="0.251"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

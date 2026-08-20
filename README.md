@@ -16,14 +16,17 @@ Arquitectura de Software
 ## Información
 
 Backend en **arquitectura por capas** (Spring Boot + Gradle) que consume la
-**World Bank Indicators API** (pública, sin autenticación, solo lectura) y expone
-una API REST propia con tres casos de uso.
+**World Bank Indicators API** y la **Frankfurter API** (ambas públicas, sin
+autenticación, solo lectura) y expone una API REST propia con cuatro casos de
+uso.
 
-En lugar de hacer un simple *proxy* de la API externa, la aplicación agrega
+En lugar de hacer un simple *proxy* de las APIs externas, la aplicación agrega
 valor de negocio sobre los datos crudos: limpia series temporales, **calcula**
-un indicador que el Banco Mundial no expone directamente (PIB per cápita) y
+un indicador que el Banco Mundial no expone directamente (PIB per cápita),
 construye un ranking de países excluyendo agregados regionales (Mundo,
-regiones, grupos de ingreso).
+regiones, grupos de ingreso), y **enriquece** el PIB per cápita convirtiéndolo
+a otra moneda con la tasa de cambio de referencia más reciente (Banco Central
+Europeo, vía Frankfurter).
 
 ## Requisitos
 
@@ -92,7 +95,9 @@ gradle test --tests "*.unit.*"           # solo las pruebas unitarias
 | `RankingServicePerformanceTest` | `RankingService.ranking()` con 20 000 observaciones (~65× el universo real de países) resuelve en <300 ms; 1 000 llamadas secuenciales con un dataset moderado en <2 s |
 | `GetSeriesServicePerformanceTest` | `GetSeriesService.getSeries()` con una serie de 50 000 puntos (filtrado + reorden cronológico) resuelve en <300 ms |
 | `CountriesWorldBankClientPerformanceTest` | con el caché ya resuelto, 32 hilos × 2 000 lecturas concurrentes (64 000 llamadas) terminan en <3 s y **no** vuelven a golpear el `WorldBankApiExecutor` |
-| `IndicatorControllerPerformanceTest` | 50 hilos × 200 peticiones (10 000 en total) repartidas entre los tres endpoints, con los casos de uso mockeados, terminan en <5 s sin errores |
+| `CalculateGdpPerCapitaServicePerformanceTest` | 5 000 llamadas secuenciales sin conversión en <1 s, con conversión de moneda en <1.5 s; 32 hilos × 500 cálculos concurrentes (mitad con conversión, mitad sin) en <3 s |
+| `ExchangeRateServicePerformanceTest` | 5 000 llamadas secuenciales a `convert()` en <1 s; 32 hilos × 1 000 conversiones concurrentes en <3 s; 32 hilos × 1 000 conversiones de la misma moneda en <2 s y **sin** golpear la API externa |
+| `IndicatorControllerPerformanceTest` | 50 hilos × 200 peticiones (10 000 en total) repartidas entre los cuatro endpoints, con los casos de uso mockeados, terminan en <5 s sin errores |
 
 Los presupuestos de tiempo son deliberadamente holgados (varias veces el
 tiempo real esperado) para que la suite no sea intermitente en máquinas más
@@ -125,13 +130,18 @@ Combina **dos** indicadores (PIB y población, dos llamadas a la API) y calcula
 un valor que el Banco Mundial no expone directamente: `PIB / población`,
 redondeado a 2 decimales.
 
-Parámetros: `country` (ISO3, obligatorio), `year` (obligatorio, ≥ 1960).
+Parámetros: `country` (ISO3, obligatorio), `year` (obligatorio, ≥ 1960),
+`currency` (opcional, código ISO 4217 — si se indica, además convierte el PIB
+per cápita a esa moneda con la tasa de cambio más reciente, vía la
+[Frankfurter API](https://api.frankfurter.dev/)).
 
 ```
 GET /api/indicators/gdp-per-capita?country=BRA&year=2022
 GET /api/indicators/gdp-per-capita?country=COL&year=2020
 GET /api/indicators/gdp-per-capita?country=DEU&year=2021
 GET /api/indicators/gdp-per-capita?country=JPN&year=2019
+GET /api/indicators/gdp-per-capita?country=COL&year=2022&currency=EUR
+GET /api/indicators/gdp-per-capita?country=COL&year=2022&currency=MXN
 ```
 
 ### 3. `GET /ranking` — ranking de países por indicador
@@ -150,14 +160,36 @@ GET /api/indicators/ranking?indicator=NY.GDP.PCAP.CD&year=2021
 GET /api/indicators/ranking?indicator=EN.ATM.CO2E.PC&year=2020&limit=20
 ```
 
+### 4. `GET /exchange-rate` — conversión de moneda
+
+Convierte un monto entre dos monedas con la tasa de cambio de referencia más
+reciente del Banco Central Europeo, obtenida de la
+[Frankfurter API](https://api.frankfurter.dev/) (pública, sin autenticación).
+
+Parámetros: `from` (moneda de origen, ISO 4217, obligatorio), `to` (moneda de
+destino, ISO 4217, obligatorio), `amount` (monto a convertir, opcional, por
+defecto 1, debe ser positivo).
+
+```
+GET /api/indicators/exchange-rate?from=USD&to=EUR
+GET /api/indicators/exchange-rate?from=USD&to=MXN&amount=1000
+GET /api/indicators/exchange-rate?from=EUR&to=JPY&amount=50
+```
+
+Frankfurter solo cubre las ~30 monedas que reporta el Banco Central Europeo
+(entre ellas EUR, GBP, JPY, BRL, MXN — **no** incluye COP, ARS ni otras
+monedas latinoamericanas fuera de BRL/MXN); pedir una moneda no soportada
+devuelve 404.
+
 ### Errores
 
 Todos los endpoints devuelven errores como `ProblemDetail` (RFC 7807):
 
 | Situación | Excepción | HTTP |
 |---|---|---|
-| No hay datos para lo pedido | `DataNotFoundException` | 404 |
+| No hay datos para lo pedido, o la moneda pedida no está soportada | `DataNotFoundException` | 404 |
 | Falla la comunicación con la API del Banco Mundial | `WorldBankApiException` | 502 |
+| Falla la comunicación con la API de tasas de cambio | `ExchangeRateApiException` | 502 |
 | Parámetros inválidos (violan las validaciones del controlador) | `ConstraintViolationException` | 400 |
 
 ## Códigos útiles del Banco Mundial
@@ -190,8 +222,12 @@ UseCase interface  →  UseCase Service (implementación, 1 clase = 1 caso de us
 Client layer (acceso a datos externos)
       │  WorldBankApiExecutor: infraestructura compartida (HTTP + parseo del sobre)
       ▼
-World Bank API (externa)
+World Bank API (externa)          Frankfurter API (externa, tasas de cambio)
 ```
+
+`CalculateGdpPerCapitaService` combina ambas fuentes: pide PIB/población al
+Banco Mundial y, si se pidió conversión, la tasa de cambio a Frankfurter — sin
+que ninguna de las dos APIs externas sepa de la existencia de la otra.
 
 Paquetes (`com.udea.worldbank.*`):
 
@@ -199,22 +235,25 @@ Paquetes (`com.udea.worldbank.*`):
 controller/       -> capa web: traduce HTTP <-> casos de uso (sin lógica de negocio)
 service/          -> casos de uso: un interface + una clase Service por cada uno
 model/            -> modelo de dominio propio (independiente de la API externa)
-client/           -> acceso a datos: HTTP a la API + ejecutor compartido
-client/dto/       -> DTOs fieles al JSON crudo de la API externa
+client/           -> acceso a datos: HTTP a las APIs externas (Banco Mundial, Frankfurter)
+client/dto/       -> DTOs fieles al JSON crudo de cada API externa
 client/mapper/    -> traduce los DTOs crudos al modelo de dominio
 dto/              -> DTOs de la respuesta propia (lo que ve el cliente de esta API)
+util/             -> helpers sin estado compartidos entre casos de uso (formateo de moneda)
 config/           -> configuración (RestClient)
 exception/        -> excepciones propias y manejador global de errores
 ```
 
 El flujo es unidireccional: `controller -> service -> client -> API externa`.
 La capa de servicio nunca reenvía el JSON crudo: filtra, ordena, combina y
-transforma; el `client` traduce la estructura del Banco Mundial al dominio.
+transforma; el `client` traduce la estructura de cada API externa al dominio.
 
 **Por qué esta arquitectura:**
 
-- **Separación de responsabilidades**: si cambia el formato de la API del
-  Banco Mundial, solo se toca `client`/`client.dto`; el resto no se entera.
+- **Separación de responsabilidades**: si cambia el formato de una API
+  externa, solo se toca su `client`/`client.dto`; el resto no se entera. Por
+  eso sumar la Frankfurter API no tocó `controller`, `model` ni los otros
+  `client`.
 - **Testeable**: cada capa se prueba con dobles (mocks) de la capa inferior
   — el proyecto mantiene 100% de cobertura.
 - **SOLID en los casos de uso**: cada uno vive en su propia clase (principio
@@ -251,11 +290,12 @@ excepción para que el `GlobalExceptionHandler` la traduzca a 502.
 ### 2. `CalculateGdpPerCapitaUseCase` → `CalculateGdpPerCapitaService`
 
 ```
-GdpPerCapitaResponse calculateGdpPerCapita(String countryIso3, int year)
+GdpPerCapitaResponse calculateGdpPerCapita(String countryIso3, int year, String targetCurrency)
 ```
 
 Calcula un indicador **derivado** que el Banco Mundial no expone: PIB per
-cápita = PIB / población.
+cápita = PIB / población. Opcionalmente lo **enriquece** convirtiéndolo a otra
+moneda.
 
 1. Pide el valor puntual del indicador `NY.GDP.MKTP.CD` (PIB) para el
    país/año — una llamada a la API.
@@ -264,10 +304,16 @@ cápita = PIB / población.
    `DataNotFoundException`.
 4. Calcula `pib / poblacion`, redondea a 2 decimales y arma el
    `GdpPerCapitaResponse`.
+5. Si se pidió `targetCurrency` (no nulo/vacío), pide a `ExchangeRateClient`
+   la tasa de cambio más reciente de USD a esa moneda, convierte el PIB per
+   cápita y llena los campos `targetCurrency`, `gdpPerCapitaConverted`,
+   `gdpPerCapitaConvertedFormatted`, `exchangeRate` y `exchangeRateDate`; si no
+   se pidió, esos campos quedan en `null`.
 
 El método privado `pointValue(iso3, indicador, año)` filtra las observaciones
 sin valor y toma la primera con dato; también está envuelto en su propio
-`try/catch` con logging de contexto.
+`try/catch` con logging de contexto — igual que `getLatestRate(...)` para la
+llamada a Frankfurter.
 
 ### 3. `RankingUseCase` → `RankingService`
 
@@ -292,6 +338,24 @@ Los métodos privados `getGlobalObservations(...)` y `getRealCountries()`
 aíslan cada llamada externa en su propio `try/catch` con su propio mensaje de
 log antes de relanzar.
 
+### 4. `ExchangeRateUseCase` → `ExchangeRateService`
+
+```
+ExchangeRateResponse convert(String from, String to, BigDecimal amount)
+```
+
+Convierte un monto entre dos monedas con la tasa de cambio de referencia más
+reciente (caso de uso nuevo, independiente de los indicadores del Banco
+Mundial, sobre la Frankfurter API):
+
+1. Normaliza ambos códigos de moneda a mayúsculas.
+2. Si `from` y `to` son la misma moneda, no llama a la API externa: la tasa es
+   `1` y el monto convertido es el mismo monto (redondeado).
+3. Si no, pide a `ExchangeRateClient.getLatestRate(from, to)` la tasa más
+   reciente.
+4. Calcula `amount * tasa`, redondea al número de decimales oficial de la
+   moneda destino y arma el `ExchangeRateResponse`.
+
 ## Piezas de soporte
 
 No son casos de uso, pero los sostienen:
@@ -312,12 +376,34 @@ No son casos de uso, pero los sostienen:
   externo) a `Observation` (modelo de dominio), incluyendo el parseo del año
   (`"2020"` → `2020`; si no es un año de 4 dígitos, devuelve `-1` para que el
   caso de uso lo descarte).
+- **`ExchangeRateClient`**: pide `/latest?base={from}&symbols={to}` a
+  Frankfurter. A diferencia de la World Bank API, la respuesta no viene
+  envuelta en un sobre `[metadata, datos]`, así que llama al `RestClient`
+  directamente (sin un ejecutor compartido). Traduce un 4xx (moneda no
+  soportada o par inválido, p.ej. `from == to`) o una respuesta sin la moneda
+  pedida en `rates` a `DataNotFoundException`; cualquier otro fallo de
+  comunicación, a `ExchangeRateApiException`.
+- **`CurrencyFormatter`** (`util/`): helper sin estado, compartido por
+  `CalculateGdpPerCapitaService` y `ExchangeRateService`, que redondea un
+  monto al número de decimales oficial de una moneda ISO 4217 (`round`) y lo
+  formatea con su símbolo (`format`) — evita duplicar esa lógica en los dos
+  casos de uso que convierten montos.
 
-## Particularidades de la API externa (resueltas en `client/`)
+## Particularidades de las APIs externas (resueltas en `client/`)
+
+**World Bank Indicators API:**
 
 - La respuesta es siempre un array de 2 posiciones: `[ metadata, [datos] ]`.
   Se extrae la posición `[1]` y se maneja el caso `null` (sin datos).
 - `value` llega como `null` en los años que un país no reportó.
 - El endpoint `all` mezcla países con agregados (Mundo, regiones, grupos de
   ingreso); estos traen `region.id == "NA"` y se descartan cruzando con `/country`.
+
+**Frankfurter API:**
+
+- Solo cubre las ~30 monedas que reporta el Banco Central Europeo (no incluye
+  COP ni la mayoría de monedas latinoamericanas, salvo BRL y MXN).
+- Devuelve 404 tanto si `base` o `symbols` no es una moneda soportada como si
+  es un par inválido (p.ej. `base == symbols`); en ambos casos el `client` lo
+  traduce a `DataNotFoundException`.
 

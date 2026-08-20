@@ -23,4 +23,16 @@ class RestClientConfigTest {
         // Assert
         assertThat(client).isNotNull();
     }
+
+    @Test
+    void test_frankfurterRestClient_buildsANonNullClient_withTheConfiguredBaseUrl() {
+        // Arrange
+        RestClient.Builder builder = RestClient.builder();
+
+        // Act
+        RestClient client = config.frankfurterRestClient(builder, "https://api.frankfurter.dev/v1");
+
+        // Assert
+        assertThat(client).isNotNull();
+    }
 }

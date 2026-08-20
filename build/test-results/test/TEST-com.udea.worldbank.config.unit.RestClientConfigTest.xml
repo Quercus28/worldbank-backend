@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.udea.worldbank.config.unit.RestClientConfigTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:51:50" hostname="QUERCUSSILVER" time="0.511">
+<testsuite name="com.udea.worldbank.config.unit.RestClientConfigTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:06" hostname="QUERCUSSILVER" time="0.442">
   <properties/>
-  <testcase name="test_worldBankRestClient_buildsANonNullClient_withTheConfiguredBaseUrl()" classname="com.udea.worldbank.config.unit.RestClientConfigTest" time="0.511"/>
+  <testcase name="test_frankfurterRestClient_buildsANonNullClient_withTheConfiguredBaseUrl()" classname="com.udea.worldbank.config.unit.RestClientConfigTest" time="0.437"/>
+  <testcase name="test_worldBankRestClient_buildsANonNullClient_withTheConfiguredBaseUrl()" classname="com.udea.worldbank.config.unit.RestClientConfigTest" time="0.004"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

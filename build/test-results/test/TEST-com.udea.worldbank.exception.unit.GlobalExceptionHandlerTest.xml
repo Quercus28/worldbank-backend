@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:51:51" hostname="QUERCUSSILVER" time="0.025">
+<testsuite name="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:07" hostname="QUERCUSSILVER" time="0.008">
   <properties/>
-  <testcase name="test_handleExternalApiError_returns502WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.01"/>
-  <testcase name="test_handleNotFound_returns404WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.004"/>
-  <testcase name="test_handleValidationError_returns400WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.008"/>
+  <testcase name="test_handleExternalApiError_returns502WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.002"/>
+  <testcase name="test_handleExchangeRateApiError_returns502WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.001"/>
+  <testcase name="test_handleNotFound_returns404WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.001"/>
+  <testcase name="test_handleValidationError_returns400WithTheExceptionMessage()" classname="com.udea.worldbank.exception.unit.GlobalExceptionHandlerTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

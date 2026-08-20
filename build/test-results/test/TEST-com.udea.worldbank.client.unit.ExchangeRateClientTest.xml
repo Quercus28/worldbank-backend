@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.udea.worldbank.client.unit.ExchangeRateClientTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:05" hostname="QUERCUSSILVER" time="0.531">
+  <properties/>
+  <testcase name="test_getLatestRate_queriesLatestWithBaseAndSymbolsParameters()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.456"/>
+  <testcase name="test_getLatestRate_throwsDataNotFoundException_whenRatesDoesNotContainTheRequestedCurrency()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.009"/>
+  <testcase name="test_getLatestRate_throwsDataNotFoundException_whenTheApiRespondsWithAClientError()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.037"/>
+  <testcase name="test_getLatestRate_returnsTheResponse_whenTheRequestedCurrencyIsPresent()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.005"/>
+  <testcase name="test_getLatestRate_throwsDataNotFoundException_whenTheResponseIsNull()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.005"/>
+  <testcase name="test_getLatestRate_throwsExchangeRateApiException_whenTheHttpCallFails()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.007"/>
+  <testcase name="test_getLatestRate_throwsDataNotFoundException_whenRatesIsNull()" classname="com.udea.worldbank.client.unit.ExchangeRateClientTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

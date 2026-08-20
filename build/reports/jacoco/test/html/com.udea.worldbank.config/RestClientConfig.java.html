@@ -20,5 +20,14 @@ import org.springframework.web.client.RestClient;
 <span class="fc" id="L20">                .baseUrl(baseUrl)</span>
 <span class="fc" id="L21">                .build();</span>
     }
+
+    @Bean
+    public RestClient frankfurterRestClient(
+            RestClient.Builder builder,
+            @Value(&quot;${frankfurter.api.base-url}&quot;) String baseUrl) {
+<span class="fc" id="L28">        return builder</span>
+<span class="fc" id="L29">                .baseUrl(baseUrl)</span>
+<span class="fc" id="L30">                .build();</span>
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExchangeRateClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">worldbank-backend</a> &gt; <a href="index.source.html" class="el_package">com.udea.worldbank.client</a> &gt; <span class="el_source">ExchangeRateClient.java</span></div><h1>ExchangeRateClient.java</h1><pre class="source lang-java linenums">package com.udea.worldbank.client;
+
+import com.udea.worldbank.client.dto.FrankfurterLatestRates;
+import com.udea.worldbank.exception.DataNotFoundException;
+import com.udea.worldbank.exception.ExchangeRateApiException;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
+/**
+ * INFRAESTRUCTURA de acceso a la Frankfurter API (tasas de cambio de
+ * referencia del Banco Central Europeo, publica y sin autenticacion).
+ *
+ * A diferencia de la World Bank API, la respuesta no viene envuelta en un
+ * array de 2 posiciones: es un objeto JSON plano, asi que no hace falta un
+ * ejecutor compartido con logica de &quot;sobre&quot;.
+ */
+@Component
+public class ExchangeRateClient {
+
+    private final RestClient restClient;
+
+<span class="fc" id="L24">    public ExchangeRateClient(RestClient frankfurterRestClient) {</span>
+<span class="fc" id="L25">        this.restClient = frankfurterRestClient;</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * @param from moneda de origen (codigo ISO 4217, p.ej. &quot;USD&quot;)
+     * @param to   moneda de destino (codigo ISO 4217, p.ej. &quot;EUR&quot;)
+     * @return la tasa de cambio mas reciente publicada de {@code from} a {@code to}
+     * @throws DataNotFoundException    si alguna de las monedas no esta soportada, o el par es invalido
+     * @throws ExchangeRateApiException si falla la comunicacion con la API
+     */
+    public FrankfurterLatestRates getLatestRate(String from, String to) {
+        try {
+<span class="fc" id="L37">            FrankfurterLatestRates response = restClient.get()</span>
+<span class="fc" id="L38">                    .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="fc" id="L39">                            .path(&quot;/latest&quot;)</span>
+<span class="fc" id="L40">                            .queryParam(&quot;base&quot;, from)</span>
+<span class="fc" id="L41">                            .queryParam(&quot;symbols&quot;, to)</span>
+<span class="fc" id="L42">                            .build())</span>
+<span class="fc" id="L43">                    .retrieve()</span>
+<span class="fc" id="L44">                    .body(FrankfurterLatestRates.class);</span>
+
+<span class="fc bfc" id="L46" title="All 6 branches covered.">            if (response == null || response.rates() == null || !response.rates().containsKey(to)) {</span>
+<span class="fc" id="L47">                throw new DataNotFoundException(</span>
+<span class="fc" id="L48">                        &quot;No exchange rate found from '%s' to '%s'&quot;.formatted(from, to));</span>
+            }
+<span class="fc" id="L50">            return response;</span>
+<span class="fc" id="L51">        } catch (HttpClientErrorException e) {</span>
+<span class="fc" id="L52">            throw new DataNotFoundException(</span>
+<span class="fc" id="L53">                    &quot;Unsupported currency or invalid pair: '%s' -&gt; '%s'&quot;.formatted(from, to));</span>
+<span class="fc" id="L54">        } catch (RestClientException e) {</span>
+<span class="fc" id="L55">            throw new ExchangeRateApiException(</span>
+<span class="fc" id="L56">                    &quot;Failed to call the exchange rate API: &quot; + e.getMessage(), e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

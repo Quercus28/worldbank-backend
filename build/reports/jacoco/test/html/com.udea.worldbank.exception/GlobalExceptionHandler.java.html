@@ -25,10 +25,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 <span class="fc" id="L25">        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());</span>
     }
 
+    /** Fallo hablando con la API externa de tasas de cambio -&gt; 502 Bad Gateway. */
+    @ExceptionHandler(ExchangeRateApiException.class)
+    public ProblemDetail handleExchangeRateApiError(ExchangeRateApiException ex) {
+<span class="fc" id="L31">        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());</span>
+    }
+
     /** Parametros invalidos (violan las restricciones del controlador) -&gt; 400. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail handleValidationError(ConstraintViolationException ex) {
-<span class="fc" id="L31">        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());</span>
+<span class="fc" id="L37">        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

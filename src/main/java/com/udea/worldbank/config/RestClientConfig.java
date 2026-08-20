@@ -20,4 +20,13 @@ public class RestClientConfig {
                 .baseUrl(baseUrl)
                 .build();
     }
+
+    @Bean
+    public RestClient frankfurterRestClient(
+            RestClient.Builder builder,
+            @Value("${frankfurter.api.base-url}") String baseUrl) {
+        return builder
+                .baseUrl(baseUrl)
+                .build();
+    }
 }

@@ -1,6 +1,7 @@
 package com.udea.worldbank.exception.unit;
 
 import com.udea.worldbank.exception.DataNotFoundException;
+import com.udea.worldbank.exception.ExchangeRateApiException;
 import com.udea.worldbank.exception.GlobalExceptionHandler;
 import com.udea.worldbank.exception.WorldBankApiException;
 import jakarta.validation.ConstraintViolationException;
@@ -42,6 +43,19 @@ class GlobalExceptionHandlerTest {
         // Assert
         assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY.value());
         assertThat(result.getDetail()).isEqualTo("external failure");
+    }
+
+    @Test
+    void test_handleExchangeRateApiError_returns502WithTheExceptionMessage() {
+        // Arrange
+        ExchangeRateApiException ex = new ExchangeRateApiException("rate provider unavailable");
+
+        // Act
+        ProblemDetail result = handler.handleExchangeRateApiError(ex);
+
+        // Assert
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY.value());
+        assertThat(result.getDetail()).isEqualTo("rate provider unavailable");
     }
 
     @Test
