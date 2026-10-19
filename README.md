@@ -407,3 +407,5 @@ No son casos de uso, pero los sostienen:
   es un par inválido (p.ej. `base == symbols`); en ambos casos el `client` lo
   traduce a `DataNotFoundException`.
 
+
+<!-- Prueba de conexión con GitHub realizada el 2026-10-19 por f.silvacadavid@gmail.com -->
