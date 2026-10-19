@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +64,7 @@ class ExchangeRateServiceTest {
         assertThat(result.rate()).isEqualByComparingTo(BigDecimal.ONE);
         assertThat(result.convertedAmount()).isEqualByComparingTo("10.00");
         assertThat(result.convertedAmountFormatted()).isEqualTo("$10.00");
-        assertThat(result.rateDate()).isEqualTo(LocalDate.now().toString());
+        assertThat(result.rateDate()).isEqualTo(LocalDate.now(ZoneOffset.UTC).toString());
         verify(exchangeRateClient, never()).getLatestRate("USD", "USD");
     }
 
@@ -90,6 +91,8 @@ class ExchangeRateServiceTest {
         Throwable thrown = catchThrowable(() -> service.convert("USD", "EUR", BigDecimal.ONE));
 
         // Assert
-        assertThat(thrown).isSameAs(failure);
+        assertThat(thrown).isInstanceOf(ExchangeRateApiException.class)
+                .hasCause(failure)
+                .hasMessageContaining(failure.getMessage());
     }
 }

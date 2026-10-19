@@ -112,6 +112,8 @@ class GetSeriesServiceTest {
         Throwable thrown = catchThrowable(() -> service.getSeries("BRA", "SP.POP.TOTL", null, null));
 
         // Assert
-        assertThat(thrown).isSameAs(failure);
+        assertThat(thrown).isInstanceOf(WorldBankApiException.class)
+                .hasCause(failure)
+                .hasMessageContaining(failure.getMessage());
     }
 }

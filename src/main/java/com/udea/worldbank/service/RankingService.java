@@ -6,8 +6,6 @@ import com.udea.worldbank.dto.RankingItemResponse;
 import com.udea.worldbank.exception.DataNotFoundException;
 import com.udea.worldbank.exception.WorldBankApiException;
 import com.udea.worldbank.model.Observation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -25,7 +23,6 @@ import java.util.stream.IntStream;
 @Service
 public final class RankingService implements RankingUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(RankingService.class);
     private static final String ALL_COUNTRIES = "all";
 
     private final ObservationsWorldBankClient observationsClient;
@@ -66,9 +63,8 @@ public final class RankingService implements RankingUseCase {
         try {
             return observationsClient.getObservations(ALL_COUNTRIES, indicator, year, year);
         } catch (WorldBankApiException e) {
-            log.error("Could not fetch '{}' for all countries in {}: {}",
-                    indicator, year, e.getMessage());
-            throw e;
+            throw new WorldBankApiException(
+                    "Could not fetch '%s' for all countries in %d: %s".formatted(indicator, year, e.getMessage()), e);
         }
     }
 
@@ -76,9 +72,8 @@ public final class RankingService implements RankingUseCase {
         try {
             return countriesClient.getRealCountryCodes();
         } catch (WorldBankApiException e) {
-            log.error("Could not fetch the list of real countries to build the ranking: {}",
-                    e.getMessage());
-            throw e;
+            throw new WorldBankApiException(
+                    "Could not fetch the list of real countries to build the ranking: %s".formatted(e.getMessage()), e);
         }
     }
 }

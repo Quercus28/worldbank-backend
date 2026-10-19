@@ -28,7 +28,7 @@ class CurrencyFormatterTest {
 
         // Assert
         assertThat(result).isEqualByComparingTo("1235");
-        assertThat(result.scale()).isEqualTo(0);
+        assertThat(result.scale()).isZero();
     }
 
     @Test

@@ -6,8 +6,6 @@ import com.udea.worldbank.dto.SeriesResponse;
 import com.udea.worldbank.exception.DataNotFoundException;
 import com.udea.worldbank.exception.WorldBankApiException;
 import com.udea.worldbank.model.Observation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -21,8 +19,6 @@ import java.util.List;
  */
 @Service
 public final class GetSeriesService implements GetSeriesUseCase {
-
-    private static final Logger log = LoggerFactory.getLogger(GetSeriesService.class);
 
     private final ObservationsWorldBankClient observationsClient;
 
@@ -64,9 +60,9 @@ public final class GetSeriesService implements GetSeriesUseCase {
         try {
             return observationsClient.getObservations(countryIso3, indicator, from, to);
         } catch (WorldBankApiException e) {
-            log.error("Could not fetch the series for '{}' in '{}' (range {}-{}): {}",
-                    indicator, countryIso3, from, to, e.getMessage());
-            throw e;
+            throw new WorldBankApiException(
+                    "Could not fetch the series for '%s' in '%s' (range %s-%s): %s"
+                            .formatted(indicator, countryIso3, from, to, e.getMessage()), e);
         }
     }
 }

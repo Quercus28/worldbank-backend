@@ -5,12 +5,11 @@ import com.udea.worldbank.client.dto.FrankfurterLatestRates;
 import com.udea.worldbank.dto.ExchangeRateResponse;
 import com.udea.worldbank.exception.ExchangeRateApiException;
 import com.udea.worldbank.util.CurrencyFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 /**
  * CASO DE USO: convertir un monto entre dos monedas.
@@ -19,8 +18,6 @@ import java.time.LocalDate;
  */
 @Service
 public final class ExchangeRateService implements ExchangeRateUseCase {
-
-    private static final Logger log = LoggerFactory.getLogger(ExchangeRateService.class);
 
     private final ExchangeRateClient exchangeRateClient;
 
@@ -37,7 +34,7 @@ public final class ExchangeRateService implements ExchangeRateUseCase {
             BigDecimal converted = CurrencyFormatter.round(amount, toCurrency);
             return new ExchangeRateResponse(
                     fromCurrency, toCurrency, BigDecimal.ONE, amount, converted,
-                    CurrencyFormatter.format(converted, toCurrency), LocalDate.now().toString());
+                    CurrencyFormatter.format(converted, toCurrency), LocalDate.now(ZoneOffset.UTC).toString());
         }
 
         FrankfurterLatestRates latest = getLatestRate(fromCurrency, toCurrency);
@@ -59,8 +56,8 @@ public final class ExchangeRateService implements ExchangeRateUseCase {
         try {
             return exchangeRateClient.getLatestRate(from, to);
         } catch (ExchangeRateApiException e) {
-            log.error("Could not fetch the exchange rate from '{}' to '{}': {}", from, to, e.getMessage());
-            throw e;
+            throw new ExchangeRateApiException(
+                    "Could not fetch the exchange rate from '%s' to '%s': %s".formatted(from, to, e.getMessage()), e);
         }
     }
 }

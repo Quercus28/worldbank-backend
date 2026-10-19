@@ -9,8 +9,6 @@ import com.udea.worldbank.exception.ExchangeRateApiException;
 import com.udea.worldbank.exception.WorldBankApiException;
 import com.udea.worldbank.model.Observation;
 import com.udea.worldbank.util.CurrencyFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,8 +25,6 @@ import java.util.Locale;
  */
 @Service
 public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapitaUseCase {
-
-    private static final Logger log = LoggerFactory.getLogger(CalculateGdpPerCapitaService.class);
 
     private static final String GDP_INDICATOR = "NY.GDP.MKTP.CD";
     private static final String POPULATION_INDICATOR = "SP.POP.TOTL";
@@ -95,8 +91,8 @@ public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapita
         try {
             return exchangeRateClient.getLatestRate(USD, targetCurrency);
         } catch (ExchangeRateApiException e) {
-            log.error("Could not fetch the exchange rate to '{}': {}", targetCurrency, e.getMessage());
-            throw e;
+            throw new ExchangeRateApiException(
+                    "Could not fetch the exchange rate to '%s': %s".formatted(targetCurrency, e.getMessage()), e);
         }
     }
 
@@ -116,9 +112,8 @@ public final class CalculateGdpPerCapitaService implements CalculateGdpPerCapita
                     .findFirst()
                     .orElse(null);
         } catch (WorldBankApiException e) {
-            log.error("Could not fetch '{}' for '{}' in {}: {}",
-                    indicator, countryIso3, year, e.getMessage());
-            throw e;
+            throw new WorldBankApiException(
+                    "Could not fetch '%s' for '%s' in %d: %s".formatted(indicator, countryIso3, year, e.getMessage()), e);
         }
     }
 

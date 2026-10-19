@@ -113,7 +113,9 @@ class RankingServiceTest {
         Throwable thrown = catchThrowable(() -> service.ranking(INDICATOR, 2022, 10));
 
         // Assert
-        assertThat(thrown).isSameAs(failure);
+        assertThat(thrown).isInstanceOf(WorldBankApiException.class)
+                .hasCause(failure)
+                .hasMessageContaining(failure.getMessage());
     }
 
     @Test
@@ -128,6 +130,8 @@ class RankingServiceTest {
         Throwable thrown = catchThrowable(() -> service.ranking(INDICATOR, 2022, 10));
 
         // Assert
-        assertThat(thrown).isSameAs(failure);
+        assertThat(thrown).isInstanceOf(WorldBankApiException.class)
+                .hasCause(failure)
+                .hasMessageContaining(failure.getMessage());
     }
 }

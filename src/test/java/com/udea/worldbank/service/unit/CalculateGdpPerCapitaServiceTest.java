@@ -155,7 +155,9 @@ class CalculateGdpPerCapitaServiceTest {
         Throwable thrown = catchThrowable(() -> service.calculateGdpPerCapita("BRA", 2022, null));
 
         // Assert
-        assertThat(thrown).isSameAs(failure);
+        assertThat(thrown).isInstanceOf(WorldBankApiException.class)
+                .hasCause(failure)
+                .hasMessageContaining(failure.getMessage());
     }
 
     @Test
@@ -225,7 +227,9 @@ class CalculateGdpPerCapitaServiceTest {
         Throwable thrown = catchThrowable(() -> service.calculateGdpPerCapita("BRA", 2022, "EUR"));
 
         // Assert
-        assertThat(thrown).isSameAs(failure);
+        assertThat(thrown).isInstanceOf(ExchangeRateApiException.class)
+                .hasCause(failure)
+                .hasMessageContaining(failure.getMessage());
     }
 
     private static Observation observation(String indicator, int year, double value) {

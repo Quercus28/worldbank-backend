@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +23,7 @@ public class CountriesWorldBankClient {
     private final WorldBankApiExecutor executor;
     private final ObjectMapper objectMapper;
 
-    private volatile Set<String> cachedRealCountryCodes;
+    private final AtomicReference<Set<String>> cachedRealCountryCodes = new AtomicReference<>();
 
     public CountriesWorldBankClient(WorldBankApiExecutor executor, ObjectMapper objectMapper) {
         this.executor = executor;
@@ -30,13 +31,14 @@ public class CountriesWorldBankClient {
     }
 
     public Set<String> getRealCountryCodes() {
-        Set<String> cache = cachedRealCountryCodes;
+        Set<String> cache = cachedRealCountryCodes.get();
         if (cache != null) {
             return cache;
         }
         synchronized (this) {
-            if (cachedRealCountryCodes != null) {
-                return cachedRealCountryCodes;
+            cache = cachedRealCountryCodes.get();
+            if (cache != null) {
+                return cache;
             }
             JsonNode root = executor.execute(uriBuilder -> uriBuilder
                     .path("/country")
@@ -50,11 +52,12 @@ public class CountriesWorldBankClient {
             }
             List<WorldBankCountry> countries =
                     objectMapper.convertValue(data, new TypeReference<List<WorldBankCountry>>() {});
-            cachedRealCountryCodes = countries.stream()
+            Set<String> realCountryCodes = countries.stream()
                     .filter(c -> !c.isAggregate())
                     .map(WorldBankCountry::id)
                     .collect(Collectors.toUnmodifiableSet());
-            return cachedRealCountryCodes;
+            cachedRealCountryCodes.set(realCountryCodes);
+            return realCountryCodes;
         }
     }
 }
