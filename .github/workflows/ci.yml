@@ -1,0 +1,32 @@
+name: CI - Build, cobertura y SonarCloud
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Dar permisos de ejecución al wrapper
+        run: chmod +x gradlew
+      - name: Build, pruebas y reporte JaCoCo
+        run: ./gradlew clean build jacocoTestReport
+      - name: Análisis SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldbank-backend
+          path: build/libs/*.jar
