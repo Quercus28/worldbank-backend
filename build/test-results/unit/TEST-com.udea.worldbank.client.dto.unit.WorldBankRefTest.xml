@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.udea.worldbank.client.dto.unit.WorldBankRefTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-20T02:24:13" hostname="QUERCUSSILVER" time="0.001">
-  <properties/>
-  <testcase name="test_accessors_returnValuesUsedInConstruction()" classname="com.udea.worldbank.client.dto.unit.WorldBankRefTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

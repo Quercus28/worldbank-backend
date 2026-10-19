@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.udea.worldbank.service.performance.CalculateGdpPerCapitaServicePerformanceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-08-20T18:19:32" hostname="QUERCUSSILVER" time="2.06">
-  <properties/>
-  <testcase name="test_calculateGdpPerCapita_sustainsHighConcurrentThroughput_whenManyThreadsCalculateAtOnce()" classname="com.udea.worldbank.service.performance.CalculateGdpPerCapitaServicePerformanceTest" time="1.533"/>
-  <testcase name="test_calculateGdpPerCapita_sustainsThroughput_underManySequentialCallsWithConversion()" classname="com.udea.worldbank.service.performance.CalculateGdpPerCapitaServicePerformanceTest" time="0.354"/>
-  <testcase name="test_calculateGdpPerCapita_sustainsThroughput_underManySequentialCallsWithoutConversion()" classname="com.udea.worldbank.service.performance.CalculateGdpPerCapitaServicePerformanceTest" time="0.169"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
