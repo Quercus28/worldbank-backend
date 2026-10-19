@@ -28,6 +28,6 @@ class WorldBankObservationTest {
         assertThat(obs.value()).isEqualTo(212559409.0);
         assertThat(obs.unit()).isEqualTo("unit");
         assertThat(obs.obsStatus()).isEqualTo("status");
-        assertThat(obs.decimal()).isEqualTo(0);
+        assertThat(obs.decimal()).isZero();
     }
 }
