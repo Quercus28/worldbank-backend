@@ -21,6 +21,18 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    acceptance {
+        java.srcDir 'src/acceptance/java'
+        resources.srcDir 'src/acceptance/resources'
+    }
+}
+
+configurations {
+    acceptanceImplementation.extendsFrom testImplementation
+    acceptanceRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -28,6 +40,21 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.awaitility:awaitility'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    acceptanceImplementation 'com.intuit.karate:karate-junit5:1.4.1'
+}
+
+tasks.named('processAcceptanceResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('acceptanceTest', Test) {
+    description = 'Pruebas de aceptación con Karate (la app debe estar corriendo en localhost:8080)'
+    group = 'verification'
+    testClassesDirs = sourceSets.acceptance.output.classesDirs
+    classpath = sourceSets.acceptance.runtimeClasspath
+    useJUnitPlatform()
+    shouldRunAfter tasks.test
 }
 
 tasks.named('test') {
